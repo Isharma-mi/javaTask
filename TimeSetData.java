@@ -47,14 +47,32 @@ public class TimeSetData {
 		return this.allTimes;
 	}
 	
-	
 	public String getTitle() {
 		return this.titleOfSet;
 	}
 	
-	
 	public List<Table> getLongRealTimeTables() {
 		return this.longRealTimeTables;
+	}
+	
+	public String tableOfLongRealTimeTables(int spacing) {
+		// Will store the the set's name, table's name, highest real time of table
+		StringBuilder output = new StringBuilder();
+		// Only goes thru tables if they aren't empty
+		if (!this.longRealTimeTables.isEmpty()) {
+			// Loops thru each longRealTimeTable in the set
+			for (int i = 0; i < this.longRealTimeTables.size(); i++) {
+				// Creates string with title of set, title of table, and highest time
+				String longTimeTableInfo = String.format("%-" + spacing + "s %-" + spacing + "s %-" + spacing + "s"
+														, this.titleOfSet
+														, this.longRealTimeTables.get(i).getTableName()
+														, this.longRealTimeTables.get(i).getHighestRealTime() + " seconds");
+				// Adds formatted string to output
+				output.append(longTimeTableInfo+"\n");
+			}
+		} 
+		// Returns output
+		return output.toString();
 	}
 	
 	public void setTitle(String title) {
@@ -65,7 +83,6 @@ public class TimeSetData {
 		this.allTimes.add(time);
 	}
 	
-	
 	public void addTable(Table table) {
 		tables.add(table);
 		
@@ -75,8 +92,7 @@ public class TimeSetData {
 			//System.out.println(table);
 		}
 	}
-	
-	
+		
 	public void organizeTimes() {
 		// Loops thru all the times
 		for (int i = 0; i < this.allTimes.size(); i++) {
@@ -90,8 +106,7 @@ public class TimeSetData {
 		
 		this.calculateTotalTimes();
 	}
-	
-	
+		
 	public String getTablesInfo() {
 		// Set tablesInfo to no tables being found
 		String tablesInfo = "NO TABLES FOUND";
@@ -106,7 +121,6 @@ public class TimeSetData {
 		// Returns each tables info on a separate line
 		return tablesInfo;
 	}
-		
 
 	private void calculateTotalTimes() {
 		// Gets the totalOverAllTime
@@ -122,8 +136,6 @@ public class TimeSetData {
 				.mapToDouble(d -> d)
 				.sum();
 	}
-
-	
 	
 	private String indentedTableInfo(String tableInfo) {
 		// Takes a string and splits by each line

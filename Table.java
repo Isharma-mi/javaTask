@@ -3,13 +3,11 @@ package logSetsProgram.logic;
 public class Table {
 	private String tableName;
 	private Double highestRealTime;
-	private String titleOfSet;
 	
-	public Table(String tableName, String titleOfSet) {
+	public Table(String tableName) {
 		// When creating table only set the name, -1 for saying no time found yet
 		this.tableName = tableName;
 		this.highestRealTime = -1.0;
-		this.titleOfSet  = titleOfSet;
 	}
 	
 	@Override
@@ -24,6 +22,10 @@ public class Table {
 	
 	public Double getHighestRealTime() {
 		return this.highestRealTime;
+	}
+	
+	public String getTableName() {
+		return this.tableName;
 	}
 	
 	public void setHighestRealTime(Double time) {

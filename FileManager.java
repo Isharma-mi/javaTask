@@ -2,8 +2,6 @@ package logSetsProgram.logic;
 
 import java.io.PrintWriter;
 import java.io.File;
-import javax.swing.JTable;
-
 
 public class FileManager {
 	private String fileName;
@@ -17,7 +15,6 @@ public class FileManager {
 		this.fileName = "CLEANED_" + fileName;
 		// Creates a new file with the file name given
 		File newFile = new File(this.fileName);
-		// NEED TO: Insert writeToFileMethod
 		writeToFile(timeSet);
 	}
 	
@@ -28,12 +25,20 @@ public class FileManager {
 			timeSet.getTimeSets().stream()
 				.forEach(t -> printWriter.println(t));
 			
-			timeSet.getTimeSets().stream() // Gets each time set
-				.map(t -> t.getLongRealTimeTables()) // Gets all the longtime tables
-				.filter(t -> !t.isEmpty()) // Gets the time tables that are not empty
-				.forEach(t -> printWriter.println(t));
-				
-			// NEED TO: Write out TimeSetData timings that took more than a minute
+			
+			// Below relates to printing out the long real times that were longer than a minute associated with the tables in each set
+			// Spacing between each column of the table
+			int spacing = 30;
+			// Creates header information at top of table
+			String tableHeader = String.format("%-"+ spacing + "s %-"+ spacing +"s %-" + spacing +"s", 
+												"Title of Set", "Title of Table", "Highest Real Time");
+			// Prints out header information
+			printWriter.println(tableHeader);
+			// Goes thru each time set
+			for (TimeSetData timeSetData: timeSet.getTimeSets()) {
+				// Writes the longRealTimeTable information
+				printWriter.print(timeSetData.tableOfLongRealTimeTables(spacing));
+			}
 		} catch (Exception e) {
 			System.out.println("Could not write to file");
 		}

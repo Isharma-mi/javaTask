@@ -70,7 +70,7 @@ public class MainProgram {
 					}
 					
 					// Creates new table with table name
-					table = new Table(tableName, timeSetData.getTitle());
+					table = new Table(tableName);
 					foundTable = true;
 				}
 				
@@ -129,7 +129,6 @@ public class MainProgram {
 				timeSetData = new TimeSetData();
 			}
 		}
-		
 		// Creates file
 		FileManager fileManager = new FileManager();
 		fileManager.createFile(fileName, timeSets);
