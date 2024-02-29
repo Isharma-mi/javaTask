@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.text.DecimalFormat;
 
 public class TimeSetData {
-	private List<Double> allTimes;
-	private List<Double> realTimes;
-	private List<Double> cpuTimes;
 	private double totalOverallTime;
 	private double totalRealTime;
 	private double totalCPUTime;
+	private List<Double> allTimes;
+	private List<Double> realTimes;
+	private List<Double> cpuTimes;
+	private List<Table> tables;
+	private List<Table> longRealTimeTables;
 	private String titleOfSet;
 	
 	public TimeSetData () {
@@ -18,6 +20,8 @@ public class TimeSetData {
 		this.allTimes = new ArrayList<>();
 		this.realTimes = new ArrayList<>();
 		this.cpuTimes = new ArrayList<>();
+		this.tables = new ArrayList<>();
+		this.longRealTimeTables = new ArrayList<>();
 		this.totalOverallTime = 0;
 		this.totalRealTime = 0;
 		this.totalCPUTime = 0;
@@ -26,29 +30,52 @@ public class TimeSetData {
 	
 	@Override
 	public String toString() {
+		// Used to round times tod decimal points
 		DecimalFormat df = new DecimalFormat("0.00");
+		
 		return "------------------------------------"
-				+ "\n" + this.titleOfSet
-				+ "\nOverall time: " + df.format(this.totalOverallTime) + " seconds"
-				+ "\nReal time: " + df.format(this.totalRealTime) + " seconds"
-				+ "\nCPU time: " + df.format(this.totalCPUTime) + " seconds";
-	}
-	
-	public String getTitle() {
-		return this.titleOfSet;
+				+ "\n" + this.titleOfSet 
+				+ "\nTimes:" 
+				+ "\n\tOverall time: " + df.format(this.totalOverallTime) + " seconds"
+				+ "\n\tReal time: " + df.format(this.totalRealTime) + " seconds"
+				+ "\n\tCPU time: " + df.format(this.totalCPUTime) + " seconds"
+				+ "\nTables:\n" + this.indentedTableInfo(this.getTablesInfo());
+		
 	}
 	
 	public List<Double> getAllTimes() {
 		return this.allTimes;
 	}
 	
+	
+	public String getTitle() {
+		return this.titleOfSet;
+	}
+	
+	
+	public List<Table> getLongRealTimeTables() {
+		return this.longRealTimeTables;
+	}
+	
 	public void setTitle(String title) {
 		this.titleOfSet = title;
-	}
+	}	
 	
 	public void addTime(Double time) {
 		this.allTimes.add(time);
 	}
+	
+	
+	public void addTable(Table table) {
+		tables.add(table);
+		
+		// Checks if the table took at least one minute
+		if (table.getHighestRealTime() >= 60.0) {
+			this.longRealTimeTables.add(table);
+			//System.out.println(table);
+		}
+	}
+	
 	
 	public void organizeTimes() {
 		// Loops thru all the times
@@ -64,6 +91,23 @@ public class TimeSetData {
 		this.calculateTotalTimes();
 	}
 	
+	
+	public String getTablesInfo() {
+		// Set tablesInfo to no tables being found
+		String tablesInfo = "NO TABLES FOUND";
+		
+		if (!this.tables.isEmpty()) {
+			// Update tablesInfo to have information of each table
+			tablesInfo = this.tables.stream()
+					.map(t -> t.toString())
+					.reduce("", (previousString, newValue) -> previousString + newValue + "\n");
+		}
+
+		// Returns each tables info on a separate line
+		return tablesInfo;
+	}
+		
+
 	private void calculateTotalTimes() {
 		// Gets the totalOverAllTime
 		this.totalOverallTime = this.allTimes.stream()
@@ -78,4 +122,21 @@ public class TimeSetData {
 				.mapToDouble(d -> d)
 				.sum();
 	}
+
+	
+	
+	private String indentedTableInfo(String tableInfo) {
+		// Takes a string and splits by each line
+		String pieces[] = tableInfo.split("\\n");
+		// Use StringBuilder to combine strings
+		StringBuilder indentedTableInfo = new StringBuilder();
+		
+		for (String s: pieces) {
+			// Adds each tables info on sep lines with indent 
+			indentedTableInfo.append("\t" + s + "\n");
+		}
+		// Returns indented info
+		return indentedTableInfo.toString();
+	}
+	
 }

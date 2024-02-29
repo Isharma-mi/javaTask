@@ -38,7 +38,9 @@ public class MainProgram {
 	private static void analyzeFile(String fileName, Scanner fileReader) {
 		TimeSets timeSets = new TimeSets();
 		TimeSetData timeSetData = new TimeSetData();
+		Table table = null;
 		boolean foundTimeSet = false;
+		boolean foundTable = false;
 		
 		// Loops thru file's lines
 		while(fileReader.hasNextLine()) {
@@ -54,32 +56,71 @@ public class MainProgram {
 			
 			// If in a time set
 			if (foundTimeSet) {
+				
+				// Checks if line has a table created in it
+				if (line.contains("NOTE: Table") 
+						&& line.contains("row")
+						&& line.contains("column")) {
+					String tableName = createTableName(line);
+					
+					// Checks that table has already been made but we have found a new table
+					if (!(table == null)) {
+						// Adds already made table 
+						timeSetData.addTable(table);
+					}
+					
+					// Creates new table with table name
+					table = new Table(tableName, timeSetData.getTitle());
+					foundTable = true;
+				}
+				
 				// Check if the line has the time information
 				if (line.contains("real time") || line.contains("cpu time")) {
+					// Sets time that will be added to -1 in case error in processing
+					Double timeInSeconds = -1.0;
 					line = line.trim();
+
 					// Checks if time is formatted as minutes:second.milliseconds
 					if (line.contains(":")) {
 						// Splits line to separate by minutes, seconds, and milliseconds
 						String[] pieces = line.substring(20,line.length()).split(":|\\.");
 						
 						// Calculates the time in seconds
-						Double timeInSeconds = Double.valueOf(pieces[0]) * 60 
+						timeInSeconds = Double.valueOf(pieces[0]) * 60 
 								+ Double.valueOf(pieces[1]) 
 								+ Double.valueOf(pieces[2]) * 0.01;
-						timeSetData.addTime(timeInSeconds);
-						
 					} else {
-						// Converts the line to a double if its already formatted as seconds.milliseconds
-						Double timeInSeconds = Double.valueOf(line.substring(line.length() - 13 , line.length() - 8));
-						// Adds time to data
-						timeSetData.addTime(timeInSeconds);	
+						// Calculates the time in seconds if time already formatted as seconds.milliseconds
+						timeInSeconds = Double.valueOf(line.substring(line.length() - 13 , line.length() - 8));
 					}
+					
+					// Checks that found a table and looking at a real time
+					if (foundTable && line.contains("real time") && !(table == null)) {
+						// Checks that table's current highest real time is less than the new real time
+						if (table.getHighestRealTime() < timeInSeconds) {
+							// Updates highest real time
+							table.setHighestRealTime(timeInSeconds);
+						}
+					}
+					
+					// Adds time to data
+					timeSetData.addTime(timeInSeconds);
 				}
 			}
 			
 			// Checks if at the end of a time set
 			if (line.contains("*****The End") && !line.contains(";") && foundTimeSet) {
+				// Adds table when reaching the end of a set
+				if (foundTable) {
+					timeSetData.addTable(table);
+					// Rests table to be null so that a table will be created with the correct set
+					table = null;
+				}
+				// Sets to false since table will not carry over to next set
+				foundTable = false;
+				// Set to false since set has been completed
 				foundTimeSet = false;
+				
 				// Organizes timeSetData' times and calculates total times
 				timeSetData.organizeTimes();
 				// Adds completed set info to list
@@ -92,5 +133,16 @@ public class MainProgram {
 		// Creates file
 		FileManager fileManager = new FileManager();
 		fileManager.createFile(fileName, timeSets);
-		}
 	}
+	
+	private static String createTableName(String tableCreationLine) {
+		// Gets index from where the table's name begins
+		int startIndexOfTableName = tableCreationLine.indexOf("Table") + 6;
+		// Gets index to where the table's name ends
+		int endIndexOfTableName = tableCreationLine.indexOf("created") - 1;
+		// Adds tables name to list
+		String tableName = tableCreationLine.substring(startIndexOfTableName, endIndexOfTableName);
+		
+		return tableName;
+	}
+}
